@@ -10,6 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.memoryhunter.goofer.ui.theme.GooferTheme
 
 @Composable
@@ -18,15 +20,16 @@ fun MainWindow() {
     val soundList = remember { mutableStateListOf<Sound>() }
 
     val currentMediaPlayer = remember { mutableStateOf<MediaPlayer?>(null) }
+    val currentContext = LocalContext.current
 
     GooferTheme {
         Column {
-            TitleBar(title = R.string.app_name.toString())
+            TitleBar(title = stringResource(id = R.string.app_name))
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomEnd
             ) {
-                SoundboardSection(soundList, currentMediaPlayer)
+                SoundboardSection(soundList, currentMediaPlayer, currentContext)
                 AddButton(
                     onClick = {
                         showPopup.value = true
@@ -42,7 +45,8 @@ fun MainWindow() {
                         soundList.add(sound)
                         showPopup.value = false
                     },
-                    currentMediaPlayer = currentMediaPlayer
+                    currentMediaPlayer = currentMediaPlayer,
+                    currentContext = currentContext
                 )
             }
         }
