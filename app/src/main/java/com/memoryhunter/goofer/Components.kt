@@ -1,5 +1,6 @@
 package com.memoryhunter.goofer
 
+import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -18,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
@@ -27,7 +29,7 @@ fun AddButton(onClick: () -> Unit = {}) {
         onClick = onClick,
         modifier = Modifier.padding(30.dp)
     ) {
-        Icon(Icons.Filled.Add, contentDescription = R.string.add.toString())
+        Icon(Icons.Filled.Add, contentDescription = stringResource(id = R.string.add))
     }
 }
 
@@ -42,7 +44,8 @@ fun TitleBar(title: String) {
 @Composable
 fun SoundboardSection(
     soundList: List<Sound>,
-    currentMediaPlayer: MutableState<MediaPlayer?>
+    currentMediaPlayer: MutableState<MediaPlayer?>,
+    currentContext: Context
 ) {
     Surface(
         modifier = Modifier.fillMaxSize()
@@ -52,20 +55,25 @@ fun SoundboardSection(
             columns = GridCells.Fixed(3)
         ) {
             items(soundList) { sound ->
-                SoundButton(sound, currentMediaPlayer = currentMediaPlayer)
+                SoundButton(
+                    sound,
+                    currentMediaPlayer = currentMediaPlayer,
+                    currentContext = currentContext
+                )
             }
         }
     }
 }
 
 @Composable
-fun SoundButton(sound: Sound, currentMediaPlayer: MutableState<MediaPlayer?>) {
+fun SoundButton(
+    sound: Sound,
+    currentMediaPlayer: MutableState<MediaPlayer?>,
+    currentContext: Context
+) {
     Button(
         onClick = {
-            currentMediaPlayer.value?.reset()
-            currentMediaPlayer.value?.setDataSource(sound.uri.toString())
-            currentMediaPlayer.value?.prepare()
-            currentMediaPlayer.value?.start()
+            playSound(currentMediaPlayer, currentContext, sound.uri)
         },
         modifier = Modifier
             .size(150.dp, 20.dp)
@@ -81,6 +89,7 @@ fun AudioPopup(
     onDismissRequest: () -> Unit,
     onAddAudio: (Sound) -> Unit,
     currentMediaPlayer: MutableState<MediaPlayer?>,
+    currentContext: Context
 ) {
     val name = remember { mutableStateOf("") }
     val uri = remember { mutableStateOf<Uri?>(null) }
@@ -90,7 +99,7 @@ fun AudioPopup(
     ) { uri.value = it }
 
     Dialog(onDismissRequest = {
-        currentMediaPlayer.value?.release() // Release the MediaPlayer when the dialog is dismissed
+        currentMediaPlayer.value?.release()
         onDismissRequest()
     }) {
         Surface(
@@ -102,14 +111,14 @@ fun AudioPopup(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = R.string.add_popup_text.toString(),
+                    text = stringResource(id = R.string.add_popup_text),
                     style = MaterialTheme.typography.headlineSmall
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = name.value,
                     onValueChange = { name.value = it },
-                    label = { Text(R.string.audio_name.toString()) },
+                    label = { Text(stringResource(id = R.string.audio_name)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -119,7 +128,7 @@ fun AudioPopup(
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(R.string.select_file.toString())
+                    Text(stringResource(id = R.string.select_file))
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
@@ -130,12 +139,12 @@ fun AudioPopup(
                 ) {
                     Button(
                         onClick = {
-                            playSound() /* TODO */
+                            playSound(currentMediaPlayer, currentContext, uri.value!!)
                         },
                         enabled = uri.value != null,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(R.string.play_test.toString())
+                        Text(stringResource(id = R.string.play_test))
                     }
                     Spacer(modifier = Modifier.width(4.dp))
                     Button(
@@ -146,7 +155,7 @@ fun AudioPopup(
                         enabled = uri.value != null,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(R.string.add.toString())
+                        Text(stringResource(id = R.string.add))
                     }
                 }
             }
