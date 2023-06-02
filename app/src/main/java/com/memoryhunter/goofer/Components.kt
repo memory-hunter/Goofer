@@ -5,6 +5,8 @@ import android.media.MediaPlayer
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -17,9 +19,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
@@ -71,16 +75,25 @@ fun SoundButton(
     currentMediaPlayer: MutableState<MediaPlayer?>,
     currentContext: Context
 ) {
-    Button(
-        onClick = {
-            playSound(currentMediaPlayer, currentContext, sound.uri)
-        },
+    Box(
         modifier = Modifier
-            .size(150.dp, 20.dp)
-            .padding(40.dp)
+            .clickable {
+                playSound(currentMediaPlayer, currentContext, sound.uri)
+            }
+            .padding(8.dp)
             .aspectRatio(1f)
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center
     ) {
-        Text(sound.name)
+        Text(
+            text = sound.name,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(2.dp)
+        )
     }
 }
 
@@ -119,7 +132,8 @@ fun AudioPopup(
                     value = name.value,
                     onValueChange = { name.value = it },
                     label = { Text(stringResource(id = R.string.audio_name)) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
