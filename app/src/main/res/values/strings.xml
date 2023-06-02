@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Goofer</string>
+    <string name="add">Add</string>
+    <string name="add_popup_text">Add audio</string>
+    <string name="play_test">Play</string>
+    <string name="select_file">Select File</string>
+    <string name="audio_name">Name</string>
+</resources>
