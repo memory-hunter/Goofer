@@ -5,8 +5,9 @@ import android.media.MediaPlayer
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -15,10 +16,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,7 +46,7 @@ fun TitleBar(title: String) {
 
 @Composable
 fun SoundboardSection(
-    soundList: List<Sound>,
+    soundList: MutableList<Sound>,
     currentMediaPlayer: MutableState<MediaPlayer?>,
     currentContext: Context
 ) {
@@ -62,24 +61,36 @@ fun SoundboardSection(
                 SoundButton(
                     sound,
                     currentMediaPlayer = currentMediaPlayer,
-                    currentContext = currentContext
+                    currentContext = currentContext,
+                    onRemoveAudio = {
+                        soundList.remove(sound)
+                    }
                 )
             }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SoundButton(
     sound: Sound,
     currentMediaPlayer: MutableState<MediaPlayer?>,
-    currentContext: Context
+    currentContext: Context,
+    onRemoveAudio: () -> Unit
 ) {
+    val showDropdown = rememberSaveable { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
-            .clickable {
-                playSound(currentMediaPlayer, currentContext, sound.uri)
-            }
+            .combinedClickable(
+                onClick = {
+                    playSound(currentMediaPlayer, currentContext, sound.uri)
+                },
+                onLongClick = {
+                    showDropdown.value = true
+                }
+            )
             .padding(8.dp)
             .aspectRatio(1f)
             .clip(RoundedCornerShape(8.dp))
@@ -94,6 +105,13 @@ fun SoundButton(
                 .align(Alignment.Center)
                 .padding(2.dp)
         )
+        if (showDropdown.value) {
+            managerDropdownMenu(
+                expanded = showDropdown.value,
+                onDismissRequest = { showDropdown.value = false },
+                onRemoveAudio = onRemoveAudio
+            )
+        }
     }
 }
 
@@ -106,7 +124,6 @@ fun AudioPopup(
 ) {
     val name = remember { mutableStateOf("") }
     val uri = remember { mutableStateOf<Uri?>(null) }
-
     val fileChooserLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri.value = it }
@@ -173,6 +190,30 @@ fun AudioPopup(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun managerDropdownMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onRemoveAudio: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .wrapContentSize(Alignment.TopEnd)
+            .padding(8.dp)
+    ) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = onDismissRequest
+        ) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.delete_entry)) },
+                onClick = onRemoveAudio
+            )
         }
     }
 }
