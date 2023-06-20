@@ -1,8 +1,9 @@
-package com.memoryhunter.goofer
+package com.memoryhunter.goofer.ui.elements
 
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -25,6 +26,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.memoryhunter.goofer.R
+import com.memoryhunter.goofer.database.SoundRepository
+import com.memoryhunter.goofer.database.SoundViewModel
+import com.memoryhunter.goofer.objects.Sound
+import com.memoryhunter.goofer.objects.playSound
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddButton(onClick: () -> Unit = {}) {
@@ -46,9 +54,10 @@ fun TitleBar(title: String) {
 
 @Composable
 fun SoundboardSection(
-    soundList: MutableList<Sound>,
+    soundList: List<Sound>,
     currentMediaPlayer: MutableState<MediaPlayer?>,
-    currentContext: Context
+    currentContext: Context,
+    soundViewModel: SoundViewModel
 ) {
     Surface(
         modifier = Modifier.fillMaxSize()
@@ -63,7 +72,7 @@ fun SoundboardSection(
                     currentMediaPlayer = currentMediaPlayer,
                     currentContext = currentContext,
                     onRemoveAudio = {
-                        soundList.remove(sound)
+                        soundViewModel.deleteSound(sound)
                     }
                 )
             }
@@ -106,7 +115,7 @@ fun SoundButton(
                 .padding(2.dp)
         )
         if (showDropdown.value) {
-            managerDropdownMenu(
+            ManagerDropdownMenu(
                 expanded = showDropdown.value,
                 onDismissRequest = { showDropdown.value = false },
                 onRemoveAudio = onRemoveAudio
@@ -195,7 +204,7 @@ fun AudioPopup(
 }
 
 @Composable
-fun managerDropdownMenu(
+fun ManagerDropdownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     onRemoveAudio: () -> Unit
