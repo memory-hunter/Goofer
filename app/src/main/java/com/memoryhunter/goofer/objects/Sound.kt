@@ -1,4 +1,4 @@
-package com.memoryhunter.goofer
+package com.memoryhunter.goofer.objects
 
 import android.content.Context
 import android.media.MediaPlayer
