@@ -1,7 +1,8 @@
-package com.memoryhunter.goofer
+package com.memoryhunter.goofer.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.memoryhunter.goofer.objects.Sound
 
 @Dao
 interface SoundDao {
@@ -11,9 +12,6 @@ interface SoundDao {
 
     @Query("SELECT * FROM sound")
     fun readAllData(): LiveData<List<Sound>>
-
-    @Update
-    suspend fun updateSound(sound: Sound)
 
     @Delete
     suspend fun deleteSound(sound: Sound)
