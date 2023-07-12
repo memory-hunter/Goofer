@@ -22,16 +22,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.isGranted
 import com.memoryhunter.goofer.R
-import com.memoryhunter.goofer.database.SoundRepository
 import com.memoryhunter.goofer.database.SoundViewModel
 import com.memoryhunter.goofer.objects.Sound
 import com.memoryhunter.goofer.objects.playSound
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 fun AddButton(onClick: () -> Unit = {}) {
@@ -120,6 +121,61 @@ fun SoundButton(
                 onRemoveAudio = onRemoveAudio
             )
         }
+    }
+}
+
+@Composable
+fun PermissionPopup(
+    onDismissRequest: () -> Unit,
+    onClick: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Surface(
+            modifier = Modifier
+                .width(300.dp)
+                .clip(RoundedCornerShape(16.dp))
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.permission_popup_text),
+                    style = MaterialTheme.typography.headlineSmall,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = onClick,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(id = R.string.grant_permission))
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun AudioPermissionCheck(
+    showPermissionPopup: MutableState<Boolean>,
+    audioMediaPermission: PermissionState
+) {
+    if (!audioMediaPermission.status.isGranted) {
+        if (showPermissionPopup.value) {
+            PermissionPopup(
+                onDismissRequest = {
+                    showPermissionPopup.value = false
+                },
+                onClick = {
+                    audioMediaPermission.launchPermissionRequest()
+                }
+            )
+        } else {
+            showPermissionPopup.value = true
+        }
+    } else {
+        showPermissionPopup.value = false
     }
 }
 
