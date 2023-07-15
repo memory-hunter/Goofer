@@ -120,7 +120,10 @@ fun SoundButton(
             ManagerDropdownMenu(
                 expanded = showDropdown.value,
                 onDismissRequest = { showDropdown.value = false },
-                onRemoveAudio = onRemoveAudio
+                onRemoveAudio = {
+                    onRemoveAudio()
+                    showDropdown.value = false
+                }
             )
         }
     }
