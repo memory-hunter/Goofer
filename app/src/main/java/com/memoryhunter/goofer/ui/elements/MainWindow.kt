@@ -1,6 +1,8 @@
 package com.memoryhunter.goofer.ui.elements
 
 import android.media.MediaPlayer
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,7 +32,14 @@ fun MainWindow(soundViewModel: SoundViewModel) {
     val currentMediaPlayer = remember { mutableStateOf<MediaPlayer?>(null) }
     val soundList by soundViewModel.soundList.observeAsState(emptyList())
     val showPermissionPopup = remember { mutableStateOf(true) }
-    val audioMediaPermission = rememberPermissionState(android.Manifest.permission.READ_MEDIA_AUDIO)
+    val permissionString = rememberPermissionState(android.Manifest.permission.READ_MEDIA_AUDIO)
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        if (it) {
+            showPermissionPopup.value = false
+        }
+    }
 
     GooferTheme {
         Column {
@@ -64,8 +73,9 @@ fun MainWindow(soundViewModel: SoundViewModel) {
             }
         }
         AudioPermissionCheck(
-            audioMediaPermission = audioMediaPermission,
-            showPermissionPopup = showPermissionPopup
-        )
+            currentContext,
+            permissionString.permission,
+            launcher
+        ) {}
     }
 }
