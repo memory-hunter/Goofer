@@ -1,8 +1,11 @@
 package com.memoryhunter.goofer.ui.elements
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -22,16 +25,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionState
-import com.google.accompanist.permissions.isGranted
+import androidx.core.content.ContextCompat
 import com.memoryhunter.goofer.R
 import com.memoryhunter.goofer.database.SoundViewModel
 import com.memoryhunter.goofer.objects.Sound
+import com.memoryhunter.goofer.objects.Utils
 import com.memoryhunter.goofer.objects.playSound
 
 @Composable
@@ -94,7 +95,8 @@ fun SoundButton(
         modifier = Modifier
             .combinedClickable(
                 onClick = {
-                    playSound(currentMediaPlayer, currentContext, sound.uri)
+                    val uri = Utils.readFile(currentContext, sound.name)
+                    playSound(currentMediaPlayer, currentContext, uri)
                 },
                 onLongClick = {
                     showDropdown.value = true
@@ -125,57 +127,24 @@ fun SoundButton(
 }
 
 @Composable
-fun PermissionPopup(
-    onDismissRequest: () -> Unit,
-    onClick: () -> Unit
-) {
-    Dialog(onDismissRequest = onDismissRequest) {
-        Surface(
-            modifier = Modifier
-                .width(300.dp)
-                .clip(RoundedCornerShape(16.dp))
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.permission_popup_text),
-                    style = MaterialTheme.typography.headlineSmall,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = onClick,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(id = R.string.grant_permission))
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
 fun AudioPermissionCheck(
-    showPermissionPopup: MutableState<Boolean>,
-    audioMediaPermission: PermissionState
+    currentContext: Context,
+    permission: String,
+    launcher: ManagedActivityResultLauncher<String, Boolean>,
+    onPermissionGranted: () -> Unit
 ) {
-    if (!audioMediaPermission.status.isGranted) {
-        if (showPermissionPopup.value) {
-            PermissionPopup(
-                onDismissRequest = {
-                    showPermissionPopup.value = false
-                },
-                onClick = {
-                    audioMediaPermission.launchPermissionRequest()
-                }
-            )
-        } else {
-            showPermissionPopup.value = true
+    val permissionResult = ContextCompat.checkSelfPermission(currentContext, permission)
+    if (permissionResult == PackageManager.PERMISSION_DENIED) {
+        Toast.makeText(
+            currentContext,
+            stringResource(id = R.string.permission_grant),
+            Toast.LENGTH_SHORT
+        ).show()
+        SideEffect {
+            launcher.launch(permission)
         }
-    } else {
-        showPermissionPopup.value = false
+    } else if (permissionResult == PackageManager.PERMISSION_GRANTED) {
+        onPermissionGranted()
     }
 }
 
@@ -244,6 +213,8 @@ fun AudioPopup(
                     Spacer(modifier = Modifier.width(4.dp))
                     Button(
                         onClick = {
+                            val audio = Utils.readAudioFromUri(currentContext, uri.value!!)
+                            Utils.writeFile(currentContext, name.value, audio)
                             val sound = Sound(name.value, uri.value!!)
                             onAddAudio(sound)
                         },
