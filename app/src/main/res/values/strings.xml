@@ -7,6 +7,5 @@
     <string name="audio_name">Name</string>
     <string name="delete_entry">Delete</string>
     <string name="invalid_file">The current sound doesn\'t exist or was moved.\nPlease delete and add the sound\nagain from a new location</string>
-    <string name="permission_popup_text">Well there, buckaroo! Looks like you need to grant me the permission to play your sweet sounds!\nClick that button down below for me, will ya?</string>
-    <string name="grant_permission">Grant</string>
+    <string name="permission_grant">Permission required!</string>
 </resources>
