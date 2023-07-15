@@ -4,12 +4,9 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import com.memoryhunter.goofer.objects.Converters
 import com.memoryhunter.goofer.objects.Sound
 
 @Database(entities = [Sound::class], version = 1, exportSchema = false)
-@TypeConverters(Converters::class)
 abstract class SoundDatabase : RoomDatabase() {
 
     abstract fun soundDao(): SoundDao

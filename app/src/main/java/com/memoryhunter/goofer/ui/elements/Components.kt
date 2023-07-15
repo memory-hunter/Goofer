@@ -215,7 +215,7 @@ fun AudioPopup(
                         onClick = {
                             val audio = Utils.readAudioFromUri(currentContext, uri.value!!)
                             Utils.writeFile(currentContext, name.value, audio)
-                            val sound = Sound(name.value, uri.value!!)
+                            val sound = Sound(name.value)
                             onAddAudio(sound)
                         },
                         enabled = uri.value != null,
