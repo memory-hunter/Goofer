@@ -221,7 +221,7 @@ fun AudioPopup(
                             val sound = Sound(name.value)
                             onAddAudio(sound)
                         },
-                        enabled = uri.value != null,
+                        enabled = uri.value != null && name.value.isNotBlank(),
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(stringResource(id = R.string.add))
